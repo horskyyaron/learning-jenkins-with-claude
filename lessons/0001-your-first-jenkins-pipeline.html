@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your First Jenkins Pipeline</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5f6c7b;
+      --paper: #fffdf7;
+      --panel: #ffffff;
+      --line: #d8dee9;
+      --accent: #d33833;
+      --accent-dark: #9d2420;
+      --good: #157347;
+      --bad: #b42318;
+      --code: #101828;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(145deg, #fff8e8 0%, #f5f7fb 55%, #eef4ff 100%);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    main {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 42px 0 64px;
+    }
+    header {
+      display: grid;
+      gap: 14px;
+      padding: 32px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, .88);
+      box-shadow: 0 20px 60px rgba(16, 24, 40, .08);
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--accent-dark);
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: .78rem;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.25rem, 6vw, 4.8rem);
+      line-height: .94;
+      letter-spacing: -.055em;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      letter-spacing: -.03em;
+    }
+    h3 { margin: 0 0 8px; }
+    p { margin: 0 0 14px; }
+    a { color: var(--accent-dark); font-weight: 700; }
+    .lede {
+      max-width: 66ch;
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+    section, .card {
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 12px 32px rgba(16, 24, 40, .055);
+    }
+    section { margin-top: 18px; }
+    .win {
+      border-left: 6px solid var(--accent);
+    }
+    .terms {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .term {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid #edf0f5;
+      border-radius: 14px;
+      background: #fbfcff;
+    }
+    .term strong { color: var(--accent-dark); }
+    pre {
+      margin: 16px 0 0;
+      overflow-x: auto;
+      padding: 20px;
+      border-radius: 18px;
+      background: var(--code);
+      color: #f8fafc;
+      border: 1px solid #263244;
+      font-size: .96rem;
+      line-height: 1.5;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .quiz {
+      display: grid;
+      gap: 16px;
+    }
+    .question {
+      border: 1px solid #e7ebf2;
+      border-radius: 18px;
+      padding: 16px;
+      background: #fff;
+    }
+    .answers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    button {
+      border: 1px solid #ccd4df;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button.correct { background: #ecfdf3; border-color: var(--good); color: var(--good); }
+    button.wrong { background: #fff1f0; border-color: var(--bad); color: var(--bad); }
+    .feedback {
+      margin-top: 10px;
+      min-height: 1.4em;
+      color: var(--muted);
+      font-weight: 650;
+    }
+    .next {
+      background: #1f2937;
+      color: #fff;
+    }
+    footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+    @media (max-width: 760px) {
+      main { width: min(100% - 22px, 980px); padding-top: 18px; }
+      header, section, .card { padding: 20px; border-radius: 20px; }
+      .grid { grid-template-columns: 1fr; }
+      .term { grid-template-columns: 1fr; gap: 2px; }
+    }
+    @media print {
+      body { background: #fff; }
+      main { width: 100%; padding: 0; }
+      header, section, .card { box-shadow: none; break-inside: avoid; }
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Lesson 0001 · Jenkins from zero</p>
+      <h1>Your First Jenkins Pipeline</h1>
+      <p class="lede">Your goal is to build CI pipelines. The first win is learning to read the smallest useful Jenkins Pipeline: what runs, where it runs, and in what order.</p>
+    </header>
+
+    <section class="win">
+      <h2>The One Thing</h2>
+      <p>A Jenkins Pipeline is an automated process, usually stored as a <code>Jenkinsfile</code>, that tells Jenkins how to build, test, and eventually deliver software. Jenkins recommends storing a Pipeline in source control so it can be reviewed, versioned, and treated as part of the project.</p>
+      <p>Sources: <a href="https://www.jenkins.io/doc/book/pipeline/" target="_blank" rel="noreferrer">Jenkins Pipeline documentation</a> and <a href="https://www.jenkins.io/doc/book/pipeline/jenkinsfile/" target="_blank" rel="noreferrer">Using a Jenkinsfile</a>.</p>
+    </section>
+
+    <div class="grid">
+      <section>
+        <h2>Pipeline Vocabulary</h2>
+        <div class="terms">
+          <div class="term"><strong><code>Jenkinsfile</code></strong><span>A text file in your repository that defines the Pipeline.</span></div>
+          <div class="term"><strong><code>pipeline</code></strong><span>The top-level block for a Declarative Pipeline.</span></div>
+          <div class="term"><strong><code>agent</code></strong><span>Where Jenkins should run the work. <code>agent any</code> means any available agent.</span></div>
+          <div class="term"><strong><code>stages</code></strong><span>The ordered collection of major phases.</span></div>
+          <div class="term"><strong><code>stage</code></strong><span>One named phase, such as Build or Test.</span></div>
+          <div class="term"><strong><code>steps</code></strong><span>The actual tasks Jenkins executes inside a stage.</span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The Mental Model</h2>
+        <p>Read a beginner Jenkinsfile like a checklist:</p>
+        <p><strong>Pipeline:</strong> here is the whole automation.</p>
+        <p><strong>Agent:</strong> choose a machine to run on.</p>
+        <p><strong>Stages:</strong> run these phases in order.</p>
+        <p><strong>Steps:</strong> execute these exact actions.</p>
+        <p>The Jenkins docs define a stage as a distinct subset of tasks and a step as a single task that tells Jenkins what to do.</p>
+      </section>
+    </div>
+
+    <section>
+      <h2>Read This Jenkinsfile</h2>
+      <p>This does not build a real app yet. It is a safe first skeleton for learning the shape.</p>
+      <pre><code>pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building...'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing...'
+            }
+        }
+    }
+}</code></pre>
+    </section>
+
+    <section>
+      <h2>Practice</h2>
+      <div class="quiz">
+        <div class="question" data-answer="agent any">
+          <h3>1. Which line tells Jenkins where it may run the Pipeline?</h3>
+          <div class="answers">
+            <button>pipeline</button>
+            <button>agent any</button>
+            <button>stage('Build')</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="Build then Test">
+          <h3>2. What order will the two stages run in?</h3>
+          <div class="answers">
+            <button>Test then Build</button>
+            <button>Build then Test</button>
+            <button>Both at once</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="echo 'Testing...'">
+          <h3>3. Which step runs inside the Test stage?</h3>
+          <div class="answers">
+            <button>echo 'Testing...'</button>
+            <button>agent any</button>
+            <button>stages</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Your Takeaway</h2>
+      <p>If you can identify the agent, stages, and steps, you can read the basic shape of a Jenkins CI pipeline. Next session, you can turn this skeleton into a real local <code>Jenkinsfile</code> with an actual command.</p>
+      <p>Ask the agent follow-up questions if any term is unclear. Good questions: “Why is <code>agent</code> required?” or “What changes when a step fails?”</p>
+      <p><a href="../reference/0001-jenkins-pipeline-skeleton.html">Open the quick reference sheet</a>.</p>
+    </section>
+
+    <footer>
+      Lesson based on the official Jenkins Pipeline and Jenkinsfile documentation.
+    </footer>
+  </main>
+
+  <script>
+    for (const question of document.querySelectorAll('.question')) {
+      const answer = question.dataset.answer;
+      const feedback = question.querySelector('.feedback');
+      for (const button of question.querySelectorAll('button')) {
+        button.addEventListener('click', () => {
+          for (const sibling of question.querySelectorAll('button')) {
+            sibling.classList.remove('correct', 'wrong');
+          }
+          if (button.textContent === answer) {
+            button.classList.add('correct');
+            feedback.textContent = 'Correct. You found the structural clue Jenkins uses.';
+          } else {
+            button.classList.add('wrong');
+            feedback.textContent = 'Not quite. Re-read the Jenkinsfile and match the word to its role.';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

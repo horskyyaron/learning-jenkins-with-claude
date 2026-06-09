@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jenkins sh Step Reference</title>
+  <style>
+    :root { --ink: #111827; --muted: #4b5563; --line: #d1d5db; --accent: #2463eb; --paper: #f8fbff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: var(--paper); line-height: 1.5; }
+    main { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0; }
+    header { border-bottom: 4px solid var(--accent); padding-bottom: 18px; margin-bottom: 22px; }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 4rem); line-height: .95; letter-spacing: -.05em; }
+    h2 { margin: 26px 0 8px; font-size: 1.35rem; }
+    p { margin: 0 0 10px; color: var(--muted); }
+    pre { margin: 14px 0; padding: 18px; background: #0b1220; color: #f9fafb; border-radius: 16px; overflow-x: auto; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fff; }
+    th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { background: #eef4ff; }
+    .rule { border: 1px solid var(--line); border-left: 6px solid var(--accent); padding: 14px; border-radius: 12px; background: #fff; }
+    @media print { main { width: 100%; padding: 0; } body { background: #fff; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Jenkins <code>sh</code> Step</h1>
+      <p>Quick reference for turning Pipeline stages into real CI work.</p>
+    </header>
+
+    <section class="rule">
+      <strong>Core rule:</strong> Use <code>sh</code> inside <code>steps</code> to run a shell command on the Jenkins agent. A non-zero exit status normally fails the step.
+    </section>
+
+    <h2>Basic Pattern</h2>
+    <pre><code>stage('Test') {
+    steps {
+        sh 'npm test'
+    }
+}</code></pre>
+
+    <h2>Common Beginner Commands</h2>
+    <table>
+      <thead>
+        <tr><th>Goal</th><th>Command</th><th>Why use it?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Show workspace path</td><td><code>sh 'pwd'</code></td><td>Confirms where the agent is running.</td></tr>
+        <tr><td>List files</td><td><code>sh 'ls'</code></td><td>Confirms what Jenkins can see.</td></tr>
+        <tr><td>Node.js tests</td><td><code>sh 'npm test'</code></td><td>Runs the test script from <code>package.json</code>.</td></tr>
+        <tr><td>Maven tests</td><td><code>sh 'mvn test'</code></td><td>Runs Java tests in a Maven project.</td></tr>
+        <tr><td>Python tests</td><td><code>sh 'pytest'</code></td><td>Runs tests discovered by pytest.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Do Not Confuse</h2>
+    <table>
+      <thead>
+        <tr><th>Syntax</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>echo 'Testing...'</code></td><td>Jenkins prints a message.</td></tr>
+        <tr><td><code>sh 'echo Testing...'</code></td><td>The agent shell runs the <code>echo</code> command.</td></tr>
+        <tr><td><code>sh 'exit 1'</code></td><td>The shell returns failure, so Jenkins normally fails the step.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Trusted Sources</h2>
+    <p><a href="https://www.jenkins.io/doc/book/pipeline/">Jenkins Pipeline documentation</a></p>
+    <p><a href="https://www.jenkins.io/doc/book/pipeline/jenkinsfile/">Using a Jenkinsfile</a></p>
+    <p><a href="https://www.jenkins.io/doc/pipeline/steps/">Pipeline Steps reference</a></p>
+  </main>
+</body>
+</html>

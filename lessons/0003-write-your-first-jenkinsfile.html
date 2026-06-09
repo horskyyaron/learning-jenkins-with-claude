@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Write Your First Jenkinsfile</title>
+  <style>
+    :root {
+      --ink: #111827;
+      --muted: #596579;
+      --paper: #fbfaf7;
+      --panel: #ffffff;
+      --line: #d9dfeb;
+      --accent: #7c3aed;
+      --accent-dark: #5b21b6;
+      --good: #147a4b;
+      --bad: #b42318;
+      --code: #120f24;
+      --soft: #f5f3ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      line-height: 1.55;
+      background: radial-gradient(circle at 15% 0%, #ede9fe 0, transparent 34%), linear-gradient(145deg, #fff 0%, var(--paper) 100%);
+    }
+    main { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    header, section {
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 16px 46px rgba(17, 24, 39, .06);
+    }
+    header { padding: 34px; }
+    section { margin-top: 18px; padding: 24px; }
+    .eyebrow { margin: 0 0 10px; color: var(--accent-dark); font-weight: 850; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 4.5rem); line-height: .95; letter-spacing: -.055em; }
+    h2 { margin: 0 0 12px; font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.03em; }
+    h3 { margin: 0 0 8px; }
+    p { margin: 0 0 14px; }
+    a { color: var(--accent-dark); font-weight: 750; }
+    .lede { max-width: 68ch; color: var(--muted); font-size: 1.1rem; margin-top: 16px; }
+    .win { border-left: 6px solid var(--accent); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .steps { counter-reset: step; display: grid; gap: 12px; }
+    .step {
+      counter-increment: step;
+      padding: 14px 16px 14px 54px;
+      position: relative;
+      border: 1px solid #e7eaf2;
+      border-radius: 16px;
+      background: #fff;
+    }
+    .step::before {
+      content: counter(step);
+      position: absolute;
+      left: 16px;
+      top: 14px;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--soft);
+      color: var(--accent-dark);
+      font-weight: 900;
+    }
+    pre {
+      margin: 14px 0 0;
+      overflow-x: auto;
+      padding: 20px;
+      border-radius: 18px;
+      background: var(--code);
+      color: #fafafa;
+      border: 1px solid #2d2948;
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .callout { background: var(--soft); border-color: #ddd6fe; }
+    .quiz { display: grid; gap: 16px; }
+    .question { border: 1px solid #e7edf5; border-radius: 18px; padding: 16px; background: #fff; }
+    .answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button.correct { background: #ecfdf3; border-color: var(--good); color: var(--good); }
+    button.wrong { background: #fff1f0; border-color: var(--bad); color: var(--bad); }
+    .feedback { margin-top: 10px; min-height: 1.4em; color: var(--muted); font-weight: 650; }
+    footer { margin-top: 18px; color: var(--muted); font-size: .95rem; }
+    @media (max-width: 760px) {
+      main { width: min(100% - 22px, 980px); padding-top: 18px; }
+      header, section { padding: 20px; border-radius: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      main { width: 100%; padding: 0; }
+      header, section { box-shadow: none; break-inside: avoid; }
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Lesson 0003 · Jenkins from zero</p>
+      <h1>Write Your First Jenkinsfile</h1>
+      <p class="lede">You can now read a Pipeline and understand <code>sh</code>. The next win is creating the file Jenkins looks for: a real <code>Jenkinsfile</code> at the root of a repository.</p>
+    </header>
+
+    <section class="win">
+      <h2>The One Thing</h2>
+      <p>A <code>Jenkinsfile</code> is the Pipeline definition stored in source control with the project. This is called Pipeline-as-code: the CI process can be reviewed, versioned, and changed alongside the application code.</p>
+      <p>Sources: <a href="https://www.jenkins.io/doc/book/pipeline/" target="_blank" rel="noreferrer">Jenkins Pipeline documentation</a> and <a href="https://www.jenkins.io/doc/book/pipeline/jenkinsfile/" target="_blank" rel="noreferrer">Using a Jenkinsfile</a>.</p>
+    </section>
+
+    <div class="grid">
+      <section>
+        <h2>What Changed</h2>
+        <p>This workspace now has a real file named <code>Jenkinsfile</code> at the repository root. That matters because Jenkins can be configured to read that file from source control and run the Pipeline it defines.</p>
+        <pre><code>Jenkinsfile
+lessons/
+reference/
+MISSION.md
+RESOURCES.md</code></pre>
+      </section>
+
+      <section>
+        <h2>Why Root?</h2>
+        <p>By convention, Jenkins looks for a file named <code>Jenkinsfile</code> in the repository root when you define a Pipeline from source control. Keeping it there makes the CI entry point obvious to humans and tools.</p>
+        <p>The file is not magic by itself. Jenkins still needs a job configured to read the repository. But the repository now contains the pipeline definition.</p>
+      </section>
+    </div>
+
+    <section>
+      <h2>Your Starter Jenkinsfile</h2>
+      <p>This file is intentionally small. It proves the agent can see the workspace and run a placeholder test stage.</p>
+      <pre><code>pipeline {
+    agent any
+
+    stages {
+        stage('Inspect') {
+            steps {
+                sh 'pwd'
+                sh 'ls'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'echo No tests configured yet'
+            }
+        }
+    }
+}</code></pre>
+    </section>
+
+    <section class="callout">
+      <h2>How to Think About This File</h2>
+      <div class="steps">
+        <div class="step"><strong><code>agent any</code></strong> asks Jenkins to pick an available agent to run the work.</div>
+        <div class="step"><strong><code>stage('Inspect')</code></strong> answers: “What workspace did Jenkins give me, and what files are visible?”</div>
+        <div class="step"><strong><code>stage('Test')</code></strong> is a placeholder for the command that will eventually prove the project still works.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Practice</h2>
+      <div class="quiz">
+        <div class="question" data-answer="At the repository root">
+          <h3>1. Where should the beginner <code>Jenkinsfile</code> live?</h3>
+          <div class="answers">
+            <button>Inside lessons</button>
+            <button>At the repository root</button>
+            <button>Inside reference</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="It can be reviewed and versioned with the project">
+          <h3>2. Why store a Pipeline in source control?</h3>
+          <div class="answers">
+            <button>It can be reviewed and versioned with the project</button>
+            <button>It makes Jenkins install faster</button>
+            <button>It avoids using agents</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="sh 'ls'">
+          <h3>3. Which line checks what files Jenkins can see?</h3>
+          <div class="answers">
+            <button>agent any</button>
+            <button>stage('Test')</button>
+            <button>sh 'ls'</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Your Takeaway</h2>
+      <p>You now have the first real artifact of Jenkins CI: a repository-level <code>Jenkinsfile</code>. The next lesson should connect this file to a running Jenkins instance so the Pipeline can execute for real.</p>
+      <p>Ask the agent follow-up questions if anything is unclear. Good questions: “How does Jenkins find the Jenkinsfile?” or “What is a Jenkins job?”</p>
+      <p><a href="../reference/0003-jenkinsfile-as-code.html">Open the quick reference sheet</a>.</p>
+    </section>
+
+    <footer>
+      Lesson based on official Jenkins Pipeline and Jenkinsfile documentation.
+    </footer>
+  </main>
+
+  <script>
+    for (const question of document.querySelectorAll('.question')) {
+      const answer = question.dataset.answer;
+      const feedback = question.querySelector('.feedback');
+      for (const button of question.querySelectorAll('button')) {
+        button.addEventListener('click', () => {
+          for (const sibling of question.querySelectorAll('button')) sibling.classList.remove('correct', 'wrong');
+          if (button.textContent === answer) {
+            button.classList.add('correct');
+            feedback.textContent = 'Correct. You matched the Jenkinsfile idea to the repository workflow.';
+          } else {
+            button.classList.add('wrong');
+            feedback.textContent = 'Not quite. Think about the file Jenkins reads from source control.';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

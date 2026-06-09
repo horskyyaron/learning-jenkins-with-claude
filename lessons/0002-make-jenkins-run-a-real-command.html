@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Make Jenkins Run a Real Command</title>
+  <style>
+    :root {
+      --ink: #111827;
+      --muted: #556070;
+      --paper: #f8fbff;
+      --panel: #ffffff;
+      --line: #d8e0ea;
+      --accent: #2463eb;
+      --accent-dark: #1d4ed8;
+      --warm: #fff7ed;
+      --good: #147a4b;
+      --bad: #b42318;
+      --code: #0b1220;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #dbeafe 0, transparent 36%), linear-gradient(135deg, #fff 0%, var(--paper) 100%);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    main { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    header {
+      padding: 34px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 22px 70px rgba(17, 24, 39, .08);
+    }
+    .eyebrow { margin: 0 0 10px; color: var(--accent-dark); font-weight: 850; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 4.6rem); line-height: .95; letter-spacing: -.055em; }
+    h2 { margin: 0 0 12px; font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.03em; }
+    h3 { margin: 0 0 8px; }
+    p { margin: 0 0 14px; }
+    a { color: var(--accent-dark); font-weight: 750; }
+    .lede { max-width: 68ch; color: var(--muted); font-size: 1.1rem; margin-top: 16px; }
+    section, .card {
+      margin-top: 18px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 12px 34px rgba(17, 24, 39, .055);
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .win { border-left: 6px solid var(--accent); }
+    .contrast { display: grid; gap: 12px; }
+    .contrast div { padding: 14px; border-radius: 16px; border: 1px solid #e8eef6; background: #fbfdff; }
+    pre {
+      margin: 14px 0 0;
+      overflow-x: auto;
+      padding: 20px;
+      border-radius: 18px;
+      background: var(--code);
+      color: #f8fafc;
+      border: 1px solid #243047;
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .callout { background: var(--warm); border-color: #fed7aa; }
+    .builder { display: grid; gap: 12px; }
+    label { display: block; font-weight: 800; margin-bottom: 6px; }
+    select, input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font: inherit;
+      background: #fff;
+    }
+    .quiz { display: grid; gap: 16px; }
+    .question { border: 1px solid #e7edf5; border-radius: 18px; padding: 16px; background: #fff; }
+    .answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button.correct { background: #ecfdf3; border-color: var(--good); color: var(--good); }
+    button.wrong { background: #fff1f0; border-color: var(--bad); color: var(--bad); }
+    .feedback { margin-top: 10px; min-height: 1.4em; color: var(--muted); font-weight: 650; }
+    footer { margin-top: 18px; color: var(--muted); font-size: .95rem; }
+    @media (max-width: 760px) {
+      main { width: min(100% - 22px, 980px); padding-top: 18px; }
+      header, section, .card { padding: 20px; border-radius: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      main { width: 100%; padding: 0; }
+      header, section, .card { box-shadow: none; break-inside: avoid; }
+      button, select, input { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Lesson 0002 · Jenkins from zero</p>
+      <h1>Make Jenkins Run a Real Command</h1>
+      <p class="lede">Lesson 1 taught you the shape of a Pipeline. This lesson teaches the first useful CI skill: putting terminal commands inside Jenkins with the <code>sh</code> step.</p>
+    </header>
+
+    <section class="win">
+      <h2>The One Thing</h2>
+      <p>The <code>sh</code> step runs a shell command on the Jenkins agent. If the command exits with a non-zero status, Jenkins treats that step as failed and the Pipeline normally stops.</p>
+      <p>Sources: Jenkins documents <code>sh</code> as a Pipeline step used to execute shell commands in the <a href="https://www.jenkins.io/doc/book/pipeline/" target="_blank" rel="noreferrer">Pipeline documentation</a> and shows it in real <code>Jenkinsfile</code> examples in <a href="https://www.jenkins.io/doc/book/pipeline/jenkinsfile/" target="_blank" rel="noreferrer">Using a Jenkinsfile</a>.</p>
+    </section>
+
+    <div class="grid">
+      <section>
+        <h2><code>echo</code> vs <code>sh</code></h2>
+        <div class="contrast">
+          <div>
+            <h3><code>echo 'Testing...'</code></h3>
+            <p>A Jenkins Pipeline step that prints a message. Useful for clarity, but it does not run your project tests.</p>
+          </div>
+          <div>
+            <h3><code>sh 'npm test'</code></h3>
+            <p>A Jenkins Pipeline step that asks the agent's shell to run an actual command. This is how CI does real work.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The CI Translation</h2>
+        <p>For a beginner CI pipeline, translate what a developer does locally into stages:</p>
+        <p><strong>Inspect:</strong> Where am I? What files are here?</p>
+        <p><strong>Build:</strong> Can the project compile or package?</p>
+        <p><strong>Test:</strong> Do the automated tests pass?</p>
+        <p>Jenkins is not replacing your build tool. The Jenkinsfile is the glue that calls tools like npm, Maven, Gradle, Make, or pytest.</p>
+      </section>
+    </div>
+
+    <section>
+      <h2>Read This Jenkinsfile</h2>
+      <p>This is still safe and generic. It proves Jenkins can run shell commands before you connect a real app.</p>
+      <pre><code>pipeline {
+    agent any
+
+    stages {
+        stage('Inspect') {
+            steps {
+                sh 'pwd'
+                sh 'ls'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'echo No tests configured yet'
+            }
+        }
+    }
+}</code></pre>
+    </section>
+
+    <section class="callout">
+      <h2>Failure Is the Signal</h2>
+      <p>CI is valuable because it can say “stop, this change broke something.” A shell command communicates success or failure with an exit status. In Unix-like shells, <code>0</code> means success and non-zero means failure. Jenkins uses that signal to mark the step and Pipeline result.</p>
+      <pre><code>sh 'exit 0'  // success
+sh 'exit 1'  // failure</code></pre>
+    </section>
+
+    <section>
+      <h2>Mini Builder</h2>
+      <p>Pick a project type and see what the Test stage might become.</p>
+      <div class="builder">
+        <div>
+          <label for="kind">Project type</label>
+          <select id="kind">
+            <option value="generic">Generic / unknown</option>
+            <option value="node">Node.js</option>
+            <option value="maven">Java with Maven</option>
+            <option value="python">Python with pytest</option>
+          </select>
+        </div>
+        <pre><code id="snippet">stage('Test') {
+    steps {
+        sh 'echo No tests configured yet'
+    }
+}</code></pre>
+      </div>
+    </section>
+
+    <section>
+      <h2>Practice</h2>
+      <div class="quiz">
+        <div class="question" data-answer="sh 'npm test'">
+          <h3>1. Which step runs a real terminal command?</h3>
+          <div class="answers">
+            <button>echo 'npm test'</button>
+            <button>sh 'npm test'</button>
+            <button>stage('npm test')</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="The Pipeline usually fails or stops">
+          <h3>2. What usually happens when an <code>sh</code> command exits non-zero?</h3>
+          <div class="answers">
+            <button>Jenkins ignores it</button>
+            <button>The Pipeline usually fails or stops</button>
+            <button>It becomes a new stage</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="Inside steps">
+          <h3>3. Where should <code>sh 'pwd'</code> go in a Declarative Pipeline stage?</h3>
+          <div class="answers">
+            <button>Inside agent</button>
+            <button>Inside stages directly</button>
+            <button>Inside steps</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Your Takeaway</h2>
+      <p>A useful CI Pipeline is mostly a clear sequence of stages that run real commands. <code>sh</code> is the bridge from Jenkins to your project tools.</p>
+      <p>Next lesson, you should run Jenkins locally or create a real <code>Jenkinsfile</code> in this workspace so the commands move from reading practice to execution practice.</p>
+      <p>Ask the agent follow-up questions if anything is unclear. Good questions: “What is an exit code?” or “How do I choose the right command for my project?”</p>
+      <p><a href="../reference/0002-jenkins-sh-step.html">Open the quick reference sheet</a>.</p>
+    </section>
+
+    <footer>
+      Lesson based on official Jenkins Pipeline and Jenkinsfile documentation.
+    </footer>
+  </main>
+
+  <script>
+    const snippets = {
+      generic: "stage('Test') {\n    steps {\n        sh 'echo No tests configured yet'\n    }\n}",
+      node: "stage('Test') {\n    steps {\n        sh 'npm test'\n    }\n}",
+      maven: "stage('Test') {\n    steps {\n        sh 'mvn test'\n    }\n}",
+      python: "stage('Test') {\n    steps {\n        sh 'pytest'\n    }\n}"
+    };
+    const kind = document.querySelector('#kind');
+    const snippet = document.querySelector('#snippet');
+    kind.addEventListener('change', () => { snippet.textContent = snippets[kind.value]; });
+
+    for (const question of document.querySelectorAll('.question')) {
+      const answer = question.dataset.answer;
+      const feedback = question.querySelector('.feedback');
+      for (const button of question.querySelectorAll('button')) {
+        button.addEventListener('click', () => {
+          for (const sibling of question.querySelectorAll('button')) sibling.classList.remove('correct', 'wrong');
+          if (button.textContent === answer) {
+            button.classList.add('correct');
+            feedback.textContent = 'Correct. That is the CI signal Jenkins uses.';
+          } else {
+            button.classList.add('wrong');
+            feedback.textContent = 'Not quite. Look for the part that runs on the agent shell.';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

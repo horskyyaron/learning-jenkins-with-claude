@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pipeline Job From SCM Reference</title>
+  <style>
+    :root { --ink: #111827; --muted: #4b5563; --line: #d1d5db; --accent: #b45309; --paper: #fffbeb; --code: #1c1204; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: var(--paper); line-height: 1.5; }
+    main { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0; }
+    header { border-bottom: 4px solid var(--accent); padding-bottom: 18px; margin-bottom: 22px; }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 4rem); line-height: .95; letter-spacing: -.05em; }
+    h2 { margin: 26px 0 8px; font-size: 1.35rem; }
+    p { margin: 0 0 10px; color: var(--muted); }
+    pre { margin: 14px 0; padding: 18px; background: var(--code); color: #f8fafc; border-radius: 16px; overflow-x: auto; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fff; }
+    th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { background: #fef3c7; }
+    .rule { border: 1px solid var(--line); border-left: 6px solid var(--accent); padding: 14px; border-radius: 12px; background: #fff; }
+    @media print { main { width: 100%; padding: 0; } body { background: #fff; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Pipeline Job From SCM</h1>
+      <p>Quick reference for making Jenkins read a repository-hosted <code>Jenkinsfile</code>.</p>
+    </header>
+
+    <section class="rule">
+      <strong>Core rule:</strong> the <code>Jenkinsfile</code> is used when a Pipeline job is configured with <code>Pipeline script from SCM</code> and the job is run.
+    </section>
+
+    <h2>Classic UI Fields</h2>
+    <table>
+      <thead>
+        <tr><th>Field</th><th>Beginner value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>New Item type</td><td><code>Pipeline</code></td></tr>
+        <tr><td>Definition</td><td><code>Pipeline script from SCM</code></td></tr>
+        <tr><td>SCM</td><td><code>Git</code></td></tr>
+        <tr><td>Repository URL</td><td>A Git URL the Jenkins container can reach</td></tr>
+        <tr><td>Branch Specifier</td><td>Usually <code>*/main</code> or <code>*/master</code></td></tr>
+        <tr><td>Script Path</td><td><code>Jenkinsfile</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Run Flow</h2>
+    <table>
+      <thead>
+        <tr><th>Action</th><th>What Jenkins does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Click <code>Save</code></td><td>Stores the job configuration in Jenkins home.</td></tr>
+        <tr><td>Click <code>Build Now</code></td><td>Checks out the repository.</td></tr>
+        <tr><td>Read <code>Jenkinsfile</code></td><td>Loads the Pipeline definition from the configured script path.</td></tr>
+        <tr><td>Open <code>Console Output</code></td><td>Shows each stage and command output.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Important Constraint</h2>
+    <p>A local path on your Mac is not automatically visible inside the Jenkins container. For the beginner SCM path, push the repository to a Git host or otherwise provide a URL Jenkins can reach.</p>
+
+    <h2>Trusted Sources</h2>
+    <p><a href="https://www.jenkins.io/doc/book/pipeline/getting-started/">Getting started with Pipeline</a></p>
+    <p><a href="https://www.jenkins.io/doc/book/pipeline/jenkinsfile/">Using a Jenkinsfile</a></p>
+  </main>
+</body>
+</html>

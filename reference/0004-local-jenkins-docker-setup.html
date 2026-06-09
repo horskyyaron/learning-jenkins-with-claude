@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Local Jenkins Docker Setup Reference</title>
+  <style>
+    :root { --ink: #17202a; --muted: #566273; --line: #d3dce8; --accent: #0f766e; --paper: #f7fbfa; --code: #10201e; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: var(--paper); line-height: 1.5; }
+    main { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0; }
+    header { border-bottom: 4px solid var(--accent); padding-bottom: 18px; margin-bottom: 22px; }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 4rem); line-height: .95; letter-spacing: -.05em; }
+    h2 { margin: 26px 0 8px; font-size: 1.35rem; }
+    p { margin: 0 0 10px; color: var(--muted); }
+    pre { margin: 14px 0; padding: 18px; background: var(--code); color: #f8fafc; border-radius: 16px; overflow-x: auto; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fff; }
+    th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { background: #e6fffb; }
+    .rule { border: 1px solid var(--line); border-left: 6px solid var(--accent); padding: 14px; border-radius: 12px; background: #fff; }
+    @media print { main { width: 100%; padding: 0; } body { background: #fff; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Local Jenkins Docker Setup</h1>
+      <p>Quick reference for starting Jenkins locally and unlocking the setup wizard.</p>
+    </header>
+
+    <section class="rule">
+      <strong>Core rule:</strong> a Jenkins container is a local Jenkins controller. After it starts, open <code>http://localhost:8080</code> and unlock it with the initial admin password from the container.
+    </section>
+
+    <h2>Minimal Learning Flow</h2>
+    <table>
+      <thead>
+        <tr><th>Step</th><th>What to check</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Start Jenkins</td><td>Run a Jenkins container that publishes container port <code>8080</code> to host port <code>8080</code>.</td></tr>
+        <tr><td>Open the UI</td><td>Browse to <code>http://localhost:8080</code> and wait for the Unlock Jenkins screen.</td></tr>
+        <tr><td>Get the password</td><td>Read <code>/var/jenkins_home/secrets/initialAdminPassword</code> inside the container.</td></tr>
+        <tr><td>Finish setup</td><td>Install suggested plugins and create the first admin user.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Run Jenkins</h2>
+    <pre><code>docker run --name jenkins-local \
+  --detach \
+  --publish 8080:8080 \
+  --publish 50000:50000 \
+  --volume jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts</code></pre>
+
+    <table>
+      <thead>
+        <tr><th>Part</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--name jenkins-local</code></td><td>Gives the container a stable name for later commands.</td></tr>
+        <tr><td><code>--detach</code></td><td>Runs Jenkins in the background.</td></tr>
+        <tr><td><code>--publish 8080:8080</code></td><td>Makes the Jenkins web UI available at <code>http://localhost:8080</code>.</td></tr>
+        <tr><td><code>--publish 50000:50000</code></td><td>Publishes the default inbound agent port; not important for the first beginner run.</td></tr>
+        <tr><td><code>--volume jenkins_home:/var/jenkins_home</code></td><td>Persists Jenkins home in a Docker volume.</td></tr>
+        <tr><td><code>jenkins/jenkins:lts</code></td><td>Uses the official Jenkins long-term support image.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Password Command</h2>
+    <pre><code>docker exec jenkins-local cat /var/jenkins_home/secrets/initialAdminPassword</code></pre>
+
+    <h2>Beginner Vocabulary</h2>
+    <table>
+      <thead>
+        <tr><th>Term</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Image</td><td>The packaged Jenkins application Docker can download and run.</td></tr>
+        <tr><td>Container</td><td>A running instance of the Jenkins image.</td></tr>
+        <tr><td>Port publish</td><td>A mapping that lets your browser reach Jenkins in the container.</td></tr>
+        <tr><td>Jenkins home</td><td>The directory where Jenkins stores configuration, secrets, jobs, and build history.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Trusted Sources</h2>
+    <p><a href="https://www.jenkins.io/doc/book/installing/docker/">Installing Jenkins with Docker</a></p>
+    <p><a href="https://www.jenkins.io/doc/book/installing/">Installing Jenkins</a></p>
+  </main>
+</body>
+</html>
