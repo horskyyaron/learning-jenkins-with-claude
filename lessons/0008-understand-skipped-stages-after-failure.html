@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Understand Skipped Stages After Failure</title>
+  <style>
+    :root {
+      --ink: #161616;
+      --muted: #5b5651;
+      --paper: #fffaf5;
+      --panel: #ffffff;
+      --line: #e5d6c8;
+      --accent: #7c2d12;
+      --accent-dark: #9a3412;
+      --good: #147a4b;
+      --bad: #b42318;
+      --code: #1c100b;
+      --soft: #ffedd5;
+      --cool: #f0f9ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      line-height: 1.55;
+      background: radial-gradient(circle at 12% 0%, #fed7aa 0, transparent 34%), linear-gradient(145deg, #fff 0%, var(--paper) 100%);
+    }
+    main { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    header, section {
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 16px 46px rgba(22, 22, 22, .06);
+    }
+    header { padding: 34px; }
+    section { margin-top: 18px; padding: 24px; }
+    .eyebrow { margin: 0 0 10px; color: var(--accent-dark); font-weight: 850; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 4.5rem); line-height: .95; letter-spacing: -.055em; }
+    h2 { margin: 0 0 12px; font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.03em; }
+    h3 { margin: 0 0 8px; }
+    p { margin: 0 0 14px; }
+    a { color: var(--accent-dark); font-weight: 750; }
+    .lede { max-width: 72ch; color: var(--muted); font-size: 1.1rem; margin-top: 16px; }
+    .win { border-left: 6px solid var(--accent); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .card { padding: 14px; border: 1px solid #ead8c8; border-radius: 16px; background: #fff; }
+    .card strong { display: block; color: var(--accent-dark); margin-bottom: 4px; }
+    pre {
+      margin: 14px 0 0;
+      overflow-x: auto;
+      padding: 20px;
+      border-radius: 18px;
+      background: var(--code);
+      color: #f8fafc;
+      border: 1px solid #4a2513;
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .callout { background: var(--soft); border-color: #fdba74; }
+    .cool { background: var(--cool); border-color: #bae6fd; }
+    .quiz { display: grid; gap: 16px; }
+    .question { border: 1px solid #ead8c8; border-radius: 18px; padding: 16px; background: #fff; }
+    .answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button {
+      border: 1px solid #d6c1ad;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button.correct { background: #ecfdf3; border-color: var(--good); color: var(--good); }
+    button.wrong { background: #fff1f0; border-color: var(--bad); color: var(--bad); }
+    .feedback { margin-top: 10px; min-height: 1.4em; color: var(--muted); font-weight: 650; }
+    label { display: block; font-weight: 850; margin-bottom: 6px; }
+    select { width: 100%; padding: 11px 12px; border: 1px solid #d6c1ad; border-radius: 12px; font: inherit; background: #fff; }
+    footer { margin-top: 18px; color: var(--muted); font-size: .95rem; }
+    @media (max-width: 860px) {
+      main { width: min(100% - 22px, 980px); padding-top: 18px; }
+      header, section { padding: 20px; border-radius: 20px; }
+      .grid, .cards { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      main { width: 100%; padding: 0; }
+      header, section { box-shadow: none; break-inside: avoid; }
+      button, select { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Lesson 0008 · Jenkins from zero</p>
+      <h1>Understand Skipped Stages After Failure</h1>
+      <p class="lede">You asked the right operational question: if a stage fails, what happens next? This lesson teaches the default failure path and the one exception worth knowing now.</p>
+    </header>
+
+    <section class="win">
+      <h2>The One Thing</h2>
+      <p>In a normal Declarative Pipeline, a failed step stops the current flow of work. A failing <code>sh</code> command normally fails the step; remaining normal steps in that stage are skipped; later normal stages are skipped; the build finishes as <code>FAILURE</code>.</p>
+      <p>Sources: <a href="https://www.jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script" target="_blank" rel="noreferrer">Pipeline <code>sh</code> step reference</a> and <a href="https://www.jenkins.io/doc/book/pipeline/syntax/#post" target="_blank" rel="noreferrer">Pipeline <code>post</code> syntax</a>.</p>
+    </section>
+
+    <section>
+      <h2>The Default Failure Chain</h2>
+      <div class="cards">
+        <div class="card"><strong>1. Step fails</strong><code>sh 'exit 1'</code> returns nonzero.</div>
+        <div class="card"><strong>2. Stage fails</strong>The stage containing that step turns red.</div>
+        <div class="card"><strong>3. Later work skips</strong>Later normal steps and stages do not run.</div>
+        <div class="card"><strong>4. Build fails</strong>The run ends with <code>Finished: FAILURE</code>.</div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section>
+        <h2>Your Current Example</h2>
+        <p>Your current <code>Jenkinsfile</code> has the failure in <code>Inspect</code>. That means <code>Test</code> should be skipped.</p>
+        <pre><code>stage('Inspect') {
+    steps {
+        sh 'pwd'
+        sh 'exit 1'
+    }
+}
+
+stage('Test') {
+    steps {
+        sh 'echo No tests configured yet'
+    }
+}</code></pre>
+      </section>
+
+      <section class="cool">
+        <h2>What You Should See</h2>
+        <p>The exact wording varies by Jenkins version and plugins, but the meaning should be clear: <code>Inspect</code> failed, and <code>Test</code> did not run.</p>
+        <pre><code>[Pipeline] { (Inspect)
+[Pipeline] sh
++ pwd
+/var/jenkins_home/workspace/...
+[Pipeline] sh
++ exit 1
+script returned exit code 1
+[Pipeline] }
+[Pipeline] stage
+[Pipeline] { (Test)
+Stage "Test" skipped due to earlier failure(s)
+Finished: FAILURE</code></pre>
+      </section>
+    </div>
+
+    <section class="callout">
+      <h2>The Beginner Exception: <code>post</code></h2>
+      <p>Skipped normal stages are not the same as cleanup/reporting logic. Jenkins Declarative Pipeline has a <code>post</code> section for steps that run after a stage or Pipeline completes. The official syntax docs list conditions such as <code>always</code>, <code>failure</code>, and <code>success</code>.</p>
+      <pre><code>pipeline {
+    agent any
+    stages {
+        stage('Test') {
+            steps {
+                sh 'exit 1'
+            }
+        }
+    }
+    post {
+        always {
+            echo 'This runs after the Pipeline finishes'
+        }
+        failure {
+            echo 'This runs only when the Pipeline failed'
+        }
+    }
+}</code></pre>
+      <p>You do not need <code>post</code> yet for your basic pipeline. Just know it exists so the rule is precise: later normal stages skip, but explicitly configured post-actions can still run.</p>
+    </section>
+
+    <section>
+      <h2>Outcome Reader</h2>
+      <p>Pick an event and see the default consequence.</p>
+      <label for="event">Pipeline event</label>
+      <select id="event">
+        <option value="step">sh returns exit code 1</option>
+        <option value="same">A later step in the same stage</option>
+        <option value="later">A later normal stage</option>
+        <option value="postAlways">post { always { ... } }</option>
+        <option value="postFailure">post { failure { ... } }</option>
+      </select>
+      <pre><code id="explain">The shell step fails. Jenkins treats the command's nonzero exit status as a failed step.</code></pre>
+    </section>
+
+    <section>
+      <h2>Practice</h2>
+      <div class="quiz">
+        <div class="question" data-answer="It is skipped">
+          <h3>1. If <code>Inspect</code> fails before <code>Test</code>, what happens to the normal <code>Test</code> stage?</h3>
+          <div class="answers">
+            <button>It is skipped</button>
+            <button>It always runs anyway</button>
+            <button>It becomes the Git branch</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="Remaining normal steps in that stage are skipped">
+          <h3>2. If a step fails in the middle of a stage, what happens to later normal steps in that same stage?</h3>
+          <div class="answers">
+            <button>Remaining normal steps in that stage are skipped</button>
+            <button>They run before the failed step</button>
+            <button>They are moved to GitHub</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="post">
+          <h3>3. Which Declarative Pipeline section can intentionally run logic after success or failure?</h3>
+          <div class="answers">
+            <button>post</button>
+            <button>agent any</button>
+            <button>Script Path</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Your Takeaway</h2>
+      <p>The default Jenkins failure flow is protective: once normal work fails, Jenkins stops the remaining normal path and reports failure. That prevents a broken build from continuing into later stages as if everything were fine.</p>
+      <p>The next lesson should restore your green baseline, then replace the placeholder test with a real command that says something meaningful about this repository.</p>
+      <p>Ask the agent follow-up questions if anything is unclear. Good questions: “When would I use post?” or “What is the difference between FAILURE and UNSTABLE?”</p>
+      <p><a href="../reference/0008-failed-step-skipped-stage.html">Open the quick reference sheet</a>.</p>
+    </section>
+
+    <footer>
+      Lesson based on official Jenkins Pipeline shell-step and Declarative syntax documentation.
+    </footer>
+  </main>
+
+  <script>
+    const explanations = {
+      step: 'The shell step fails. Jenkins treats the command\'s nonzero exit status as a failed step.',
+      same: 'It is skipped by default because the stage has already failed.',
+      later: 'It is skipped by default because an earlier stage failed.',
+      postAlways: 'It can still run after completion because post/always is explicit completion logic.',
+      postFailure: 'It runs only when the stage or Pipeline has failed, depending on where the post block is placed.'
+    };
+
+    const event = document.querySelector('#event');
+    const explain = document.querySelector('#explain');
+    event.addEventListener('change', () => {
+      explain.textContent = explanations[event.value];
+    });
+
+    for (const question of document.querySelectorAll('.question')) {
+      const answer = question.dataset.answer;
+      const feedback = question.querySelector('.feedback');
+      for (const button of question.querySelectorAll('button')) {
+        button.addEventListener('click', () => {
+          for (const sibling of question.querySelectorAll('button')) sibling.classList.remove('correct', 'wrong');
+          if (button.textContent === answer) {
+            button.classList.add('correct');
+            feedback.textContent = 'Correct. You identified the default skip behavior after failure.';
+          } else {
+            button.classList.add('wrong');
+            feedback.textContent = 'Not quite. Normal work stops after a failed step unless the Jenkinsfile explicitly handles it.';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

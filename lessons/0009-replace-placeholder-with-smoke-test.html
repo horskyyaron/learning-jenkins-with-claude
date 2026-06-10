@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Replace a Placeholder with a Smoke Test</title>
+  <style>
+    :root {
+      --ink: #10201a;
+      --muted: #53665e;
+      --paper: #f7fff9;
+      --panel: #ffffff;
+      --line: #d4e8de;
+      --accent: #15803d;
+      --accent-dark: #166534;
+      --good: #147a4b;
+      --bad: #b42318;
+      --code: #07150d;
+      --soft: #dcfce7;
+      --cool: #eff6ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      line-height: 1.55;
+      background: radial-gradient(circle at 82% 0%, #bbf7d0 0, transparent 34%), linear-gradient(145deg, #fff 0%, var(--paper) 100%);
+    }
+    main { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    header, section {
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 16px 46px rgba(16, 32, 26, .06);
+    }
+    header { padding: 34px; }
+    section { margin-top: 18px; padding: 24px; }
+    .eyebrow { margin: 0 0 10px; color: var(--accent-dark); font-weight: 850; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 4.5rem); line-height: .95; letter-spacing: -.055em; }
+    h2 { margin: 0 0 12px; font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.03em; }
+    h3 { margin: 0 0 8px; }
+    p { margin: 0 0 14px; }
+    a { color: var(--accent-dark); font-weight: 750; }
+    .lede { max-width: 72ch; color: var(--muted); font-size: 1.1rem; margin-top: 16px; }
+    .win { border-left: 6px solid var(--accent); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .card { padding: 14px; border: 1px solid #dceadf; border-radius: 16px; background: #fff; }
+    .card strong { display: block; color: var(--accent-dark); margin-bottom: 4px; }
+    pre {
+      margin: 14px 0 0;
+      overflow-x: auto;
+      padding: 20px;
+      border-radius: 18px;
+      background: var(--code);
+      color: #f8fafc;
+      border: 1px solid #143d23;
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .callout { background: var(--soft); border-color: #86efac; }
+    .cool { background: var(--cool); border-color: #bfdbfe; }
+    .quiz { display: grid; gap: 16px; }
+    .question { border: 1px solid #dceadf; border-radius: 18px; padding: 16px; background: #fff; }
+    .answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button {
+      border: 1px solid #cbd5d0;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button.correct { background: #ecfdf3; border-color: var(--good); color: var(--good); }
+    button.wrong { background: #fff1f0; border-color: var(--bad); color: var(--bad); }
+    .feedback { margin-top: 10px; min-height: 1.4em; color: var(--muted); font-weight: 650; }
+    label { display: block; font-weight: 850; margin-bottom: 6px; }
+    select { width: 100%; padding: 11px 12px; border: 1px solid #cbd5d0; border-radius: 12px; font: inherit; background: #fff; }
+    footer { margin-top: 18px; color: var(--muted); font-size: .95rem; }
+    @media (max-width: 860px) {
+      main { width: min(100% - 22px, 980px); padding-top: 18px; }
+      header, section { padding: 20px; border-radius: 20px; }
+      .grid, .cards { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      main { width: 100%; padding: 0; }
+      header, section { box-shadow: none; break-inside: avoid; }
+      button, select { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Lesson 0009 · Jenkins from zero</p>
+      <h1>Replace a Placeholder with a Smoke Test</h1>
+      <p class="lede">Your pipeline has moved past “can Jenkins run?” The next win is making the <code>Test</code> stage prove one small real thing about this repository.</p>
+    </header>
+
+    <section class="win">
+      <h2>The One Thing</h2>
+      <p>A smoke test is a small, fast check that proves the build is basically wired correctly. Jenkins’ <code>Jenkinsfile</code> docs describe the <code>Test</code> stage as the place where automated tests run, and the <code>sh</code> step fails when a command exits nonzero. That means simple shell checks can become real CI signals.</p>
+      <p>Sources: <a href="https://www.jenkins.io/doc/book/pipeline/jenkinsfile/#test" target="_blank" rel="noreferrer">Using a Jenkinsfile: Test</a> and <a href="https://www.jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script" target="_blank" rel="noreferrer">Pipeline <code>sh</code> step reference</a>.</p>
+    </section>
+
+    <div class="grid">
+      <section>
+        <h2>Before</h2>
+        <p>This was a placeholder. It always passed as long as Jenkins could print text.</p>
+        <pre><code>stage('Test') {
+    steps {
+        sh 'echo No tests configured yet'
+    }
+}</code></pre>
+      </section>
+
+      <section class="cool">
+        <h2>After</h2>
+        <p>The pipeline now checks that the expected repository shape exists after checkout.</p>
+        <pre><code>stage('Test') {
+    steps {
+        sh 'test -f Jenkinsfile'
+        sh 'test -d lessons'
+        sh 'test -d reference'
+    }
+}</code></pre>
+      </section>
+    </div>
+
+    <section>
+      <h2>What Each Check Proves</h2>
+      <div class="cards">
+        <div class="card"><strong><code>test -f Jenkinsfile</code></strong>The CI entry point exists as a file.</div>
+        <div class="card"><strong><code>test -d lessons</code></strong>The lesson archive exists as a directory.</div>
+        <div class="card"><strong><code>test -d reference</code></strong>The reference archive exists as a directory.</div>
+      </div>
+    </section>
+
+    <section class="callout">
+      <h2>Why This Is a Better Beginner Test</h2>
+      <p><code>echo</code> answers: “Can Jenkins print text?”</p>
+      <p><code>test -f</code> and <code>test -d</code> answer: “Did Jenkins check out the repository shape I expect?”</p>
+      <p>If someone renames <code>Jenkinsfile</code> or removes <code>lessons</code>, the command exits nonzero, Jenkins marks the step failed, and the console output gives you a useful cause.</p>
+    </section>
+
+    <section>
+      <h2>Command Reader</h2>
+      <p>Pick a command and see what it proves.</p>
+      <label for="command">Smoke-test command</label>
+      <select id="command">
+        <option value="file">test -f Jenkinsfile</option>
+        <option value="lessons">test -d lessons</option>
+        <option value="reference">test -d reference</option>
+        <option value="echo">echo No tests configured yet</option>
+      </select>
+      <pre><code id="explain">Passes only if Jenkinsfile exists and is a file in the workspace.</code></pre>
+    </section>
+
+    <section>
+      <h2>Practice</h2>
+      <div class="quiz">
+        <div class="question" data-answer="It can fail when the expected file is missing">
+          <h3>1. Why is <code>test -f Jenkinsfile</code> more useful than <code>echo</code>?</h3>
+          <div class="answers">
+            <button>It can fail when the expected file is missing</button>
+            <button>It installs Jenkins plugins</button>
+            <button>It creates a GitHub repo</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="A directory named lessons exists">
+          <h3>2. What does <code>test -d lessons</code> prove?</h3>
+          <div class="answers">
+            <button>A directory named lessons exists</button>
+            <button>Jenkins has deployed production</button>
+            <button>The build has no console output</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="The sh step fails and the build turns red">
+          <h3>3. What happens if one of these <code>test</code> commands returns nonzero?</h3>
+          <div class="answers">
+            <button>The sh step fails and the build turns red</button>
+            <button>Jenkins ignores it</button>
+            <button>The command is converted to HTML</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Your Takeaway</h2>
+      <p>You now have a real, tiny <code>Test</code> stage. It is not application testing yet, but it is CI behavior: check an expectation, pass when true, fail when false, and make the console output useful.</p>
+      <p>Next lesson: add a <code>Build</code> stage so your pipeline has the common beginner shape <code>Inspect -> Build -> Test</code>.</p>
+      <p>Ask the agent follow-up questions if anything is unclear. Good questions: “What is a smoke test?” or “What test should replace this when I have a real app?”</p>
+      <p><a href="../reference/0009-repository-smoke-test.html">Open the quick reference sheet</a>.</p>
+    </section>
+
+    <footer>
+      Lesson based on official Jenkins Jenkinsfile and Pipeline shell-step documentation.
+    </footer>
+  </main>
+
+  <script>
+    const explanations = {
+      file: 'Passes only if Jenkinsfile exists and is a file in the workspace.',
+      lessons: 'Passes only if lessons exists and is a directory in the workspace.',
+      reference: 'Passes only if reference exists and is a directory in the workspace.',
+      echo: 'Prints text, but does not verify the repository shape.'
+    };
+
+    const command = document.querySelector('#command');
+    const explain = document.querySelector('#explain');
+    command.addEventListener('change', () => {
+      explain.textContent = explanations[command.value];
+    });
+
+    for (const question of document.querySelectorAll('.question')) {
+      const answer = question.dataset.answer;
+      const feedback = question.querySelector('.feedback');
+      for (const button of question.querySelectorAll('button')) {
+        button.addEventListener('click', () => {
+          for (const sibling of question.querySelectorAll('button')) sibling.classList.remove('correct', 'wrong');
+          if (button.textContent === answer) {
+            button.classList.add('correct');
+            feedback.textContent = 'Correct. You identified why this is a real CI signal.';
+          } else {
+            button.classList.add('wrong');
+            feedback.textContent = 'Not quite. A useful test proves an expectation and can fail when it is false.';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

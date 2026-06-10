@@ -12,6 +12,8 @@
   Official guide for running, rerunning, and restarting Pipeline builds. Use for: understanding completed Pipeline runs, stage restarts, and run-level troubleshooting entry points.
 - [Pipeline Syntax reference](https://www.jenkins.io/doc/book/pipeline/syntax/)
   Detailed Declarative Pipeline syntax reference. Use for: checking exact syntax when adding new directives.
+- [Pipeline `post` syntax](https://www.jenkins.io/doc/book/pipeline/syntax/#post)
+  Official reference for post-build and post-stage conditions such as `always`, `failure`, and `success`. Use for: explaining what can still run after a stage or Pipeline completes.
 - [Pipeline Steps reference](https://www.jenkins.io/doc/pipeline/steps/)
   Searchable reference for available Pipeline steps from Jenkins plugins. Use for: finding steps such as `sh`, `junit`, `archiveArtifacts`, and `checkout`.
 - [Pipeline `sh` step reference](https://www.jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script)

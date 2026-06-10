@@ -5,13 +5,15 @@ pipeline {
         stage('Inspect') {
             steps {
                 sh 'pwd'
-                sh 'exit 1'
+                sh 'ls'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'echo No tests configured yet'
+                sh 'test -f Jenkinsfile'
+                sh 'test -d lessons'
+                sh 'test -d reference'
             }
         }
     }

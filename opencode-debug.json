@@ -14,3 +14,6 @@
 {"ts":1781011046954,"event":{"id":"evt_eac87e22a001FoKIv4xa26Qc5N","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
 {"ts":1781014778067,"event":{"id":"evt_eacc0d0d3002ehNFSu735X370X","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
 {"ts":1781080483468,"event":{"id":"evt_eb0ab668c002blmpdb1K5LChMx","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
+{"ts":1781080914567,"event":{"id":"evt_eb0b1fa87002qJJoolPbQ8iKU1","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
+{"ts":1781081085096,"event":{"id":"evt_eb0b494a8002f17yjpWdYpUtRJ","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
+{"ts":1781081795370,"event":{"id":"evt_eb0bf6b2a002jV1GtIby5q8P4Y","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
