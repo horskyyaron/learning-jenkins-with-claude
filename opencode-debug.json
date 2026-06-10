@@ -12,3 +12,5 @@
 {"ts":1781010456495,"event":{"id":"evt_eac7edfaf002VfOyrvz7nVrwjW","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
 {"ts":1781010651802,"event":{"id":"evt_eac81da9a0026PuZOkZS12dUpt","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
 {"ts":1781011046954,"event":{"id":"evt_eac87e22a001FoKIv4xa26Qc5N","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
+{"ts":1781014778067,"event":{"id":"evt_eacc0d0d3002ehNFSu735X370X","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}
+{"ts":1781080483468,"event":{"id":"evt_eb0ab668c002blmpdb1K5LChMx","type":"session.idle","properties":{"sessionID":"ses_1539140c2ffeyChacprXmRzW63"}}}

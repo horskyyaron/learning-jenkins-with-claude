@@ -8,10 +8,14 @@
   Official guide to storing pipelines as code in source control. Use for: writing beginner-to-intermediate `Jenkinsfile` examples.
 - [Getting started with Pipeline](https://www.jenkins.io/doc/book/pipeline/getting-started/)
   Official guide for creating Pipeline projects in Jenkins, including the classic UI flow and the `Pipeline script from SCM` option. Use for: connecting a Jenkins job to a repository-hosted `Jenkinsfile`.
+- [Running Pipelines](https://www.jenkins.io/doc/book/pipeline/running-pipelines/)
+  Official guide for running, rerunning, and restarting Pipeline builds. Use for: understanding completed Pipeline runs, stage restarts, and run-level troubleshooting entry points.
 - [Pipeline Syntax reference](https://www.jenkins.io/doc/book/pipeline/syntax/)
   Detailed Declarative Pipeline syntax reference. Use for: checking exact syntax when adding new directives.
 - [Pipeline Steps reference](https://www.jenkins.io/doc/pipeline/steps/)
   Searchable reference for available Pipeline steps from Jenkins plugins. Use for: finding steps such as `sh`, `junit`, `archiveArtifacts`, and `checkout`.
+- [Pipeline `sh` step reference](https://www.jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script)
+  Official reference for the shell step. Use for: understanding that a script with a nonzero exit status normally fails the step, unless options such as `returnStatus` are used.
 - [Installing Jenkins](https://www.jenkins.io/doc/book/installing/)
   Official installation entry point. Use for: choosing a local Jenkins installation route when the lessons move from reading pipelines to running them.
 - [Installing Jenkins with Docker](https://www.jenkins.io/doc/book/installing/docker/)

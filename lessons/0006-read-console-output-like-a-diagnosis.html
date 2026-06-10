@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Read Console Output Like a Diagnosis</title>
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #536176;
+      --paper: #f8fbff;
+      --panel: #ffffff;
+      --line: #d6e0ef;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --good: #147a4b;
+      --bad: #b42318;
+      --code: #0b1220;
+      --soft: #dbeafe;
+      --warn: #fff7ed;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      line-height: 1.55;
+      background: radial-gradient(circle at 84% 0%, #bfdbfe 0, transparent 34%), linear-gradient(145deg, #fff 0%, var(--paper) 100%);
+    }
+    main { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    header, section {
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 16px 46px rgba(15, 23, 42, .06);
+    }
+    header { padding: 34px; }
+    section { margin-top: 18px; padding: 24px; }
+    .eyebrow { margin: 0 0 10px; color: var(--accent-dark); font-weight: 850; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 4.5rem); line-height: .95; letter-spacing: -.055em; }
+    h2 { margin: 0 0 12px; font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.03em; }
+    h3 { margin: 0 0 8px; }
+    p { margin: 0 0 14px; }
+    a { color: var(--accent-dark); font-weight: 750; }
+    .lede { max-width: 72ch; color: var(--muted); font-size: 1.1rem; margin-top: 16px; }
+    .win { border-left: 6px solid var(--accent); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .card { padding: 14px; border: 1px solid #dce6f3; border-radius: 16px; background: #fff; }
+    .card strong { display: block; color: var(--accent-dark); margin-bottom: 4px; }
+    pre {
+      margin: 14px 0 0;
+      overflow-x: auto;
+      padding: 20px;
+      border-radius: 18px;
+      background: var(--code);
+      color: #f8fafc;
+      border: 1px solid #263244;
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .callout { background: var(--soft); border-color: #93c5fd; }
+    .warning { background: var(--warn); border-color: #fed7aa; }
+    .quiz { display: grid; gap: 16px; }
+    .question { border: 1px solid #dce6f3; border-radius: 18px; padding: 16px; background: #fff; }
+    .answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button.correct { background: #ecfdf3; border-color: var(--good); color: var(--good); }
+    button.wrong { background: #fff1f0; border-color: var(--bad); color: var(--bad); }
+    .feedback { margin-top: 10px; min-height: 1.4em; color: var(--muted); font-weight: 650; }
+    label { display: block; font-weight: 850; margin-bottom: 6px; }
+    select { width: 100%; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; background: #fff; }
+    footer { margin-top: 18px; color: var(--muted); font-size: .95rem; }
+    @media (max-width: 860px) {
+      main { width: min(100% - 22px, 980px); padding-top: 18px; }
+      header, section { padding: 20px; border-radius: 20px; }
+      .grid, .cards { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      main { width: 100%; padding: 0; }
+      header, section { box-shadow: none; break-inside: avoid; }
+      button, select { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Lesson 0006 · Jenkins from zero</p>
+      <h1>Read Console Output Like a Diagnosis</h1>
+      <p class="lede">You ran your first SCM Pipeline successfully. The next win is learning a repeatable reading pattern so console output becomes evidence, not noise.</p>
+    </header>
+
+    <section class="win">
+      <h2>The One Thing</h2>
+      <p>Console Output is the detailed log for one Pipeline run. Jenkins' getting-started guide sends you to build <code>#1</code> and <code>Console Output</code> to see the full run output after clicking <code>Build Now</code>. Read it in order: trigger, checkout, stage output, final result.</p>
+      <p>Sources: <a href="https://www.jenkins.io/doc/book/pipeline/getting-started/" target="_blank" rel="noreferrer">Getting started with Pipeline</a> and <a href="https://www.jenkins.io/doc/book/pipeline/running-pipelines/" target="_blank" rel="noreferrer">Running Pipelines</a>.</p>
+    </section>
+
+    <section>
+      <h2>The Four-Pass Scan</h2>
+      <div class="cards">
+        <div class="card"><strong>1. Trigger</strong>Why did this run start?</div>
+        <div class="card"><strong>2. Checkout</strong>Did Jenkins fetch the right repo, branch, and commit?</div>
+        <div class="card"><strong>3. Stages</strong>Which stages and shell commands ran?</div>
+        <div class="card"><strong>4. Result</strong>Did it finish with success, failure, or unstable?</div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section>
+        <h2>What Your Run Proved</h2>
+        <p>Your <code>pwd</code> command proved Jenkins had a workspace for this job. Your <code>ls</code> command proved Jenkins checked out files from Git and could see the repository contents, including <code>Jenkinsfile</code>.</p>
+        <pre><code>stage('Inspect') {
+    steps {
+        sh 'pwd'
+        sh 'ls'
+    }
+}</code></pre>
+      </section>
+
+      <section class="warning">
+        <h2>What It Did Not Prove Yet</h2>
+        <p>The run did not prove the project builds or has real tests. Your current <code>Test</code> stage only echoes a message, so it is a placeholder. That is fine: first you prove Jenkins can run the repository, then you replace placeholders with real project commands.</p>
+      </section>
+    </div>
+
+    <section class="callout">
+      <h2>Healthy Beginner Output</h2>
+      <p>A successful run should contain stage boundaries, shell steps, command output, and a final success result.</p>
+      <pre><code>[Pipeline] stage
+[Pipeline] { (Inspect)
+[Pipeline] sh
++ pwd
+/var/jenkins_home/workspace/learning-jenkins
+[Pipeline] sh
++ ls
+Jenkinsfile
+lessons
+reference
+[Pipeline] }
+[Pipeline] stage
+[Pipeline] { (Test)
+[Pipeline] sh
++ echo No tests configured yet
+No tests configured yet
+[Pipeline] }
+Finished: SUCCESS</code></pre>
+    </section>
+
+    <section>
+      <h2>Line Reader</h2>
+      <p>Pick a line type and learn what signal it gives you.</p>
+      <label for="line">Console output line</label>
+      <select id="line">
+        <option value="stage">[Pipeline] { (Inspect)</option>
+        <option value="sh">[Pipeline] sh</option>
+        <option value="pwd">+ pwd</option>
+        <option value="workspace">/var/jenkins_home/workspace/...</option>
+        <option value="result">Finished: SUCCESS</option>
+      </select>
+      <pre><code id="explain">A stage boundary. This tells you Jenkins entered the named stage from the Jenkinsfile.</code></pre>
+    </section>
+
+    <section>
+      <h2>Practice</h2>
+      <div class="quiz">
+        <div class="question" data-answer="Jenkins entered the Inspect stage">
+          <h3>1. What does <code>[Pipeline] { (Inspect)</code> tell you?</h3>
+          <div class="answers">
+            <button>Jenkins entered the Inspect stage</button>
+            <button>The build failed</button>
+            <button>GitHub created a repository</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="The Jenkins workspace path">
+          <h3>2. What does the output of <code>pwd</code> show?</h3>
+          <div class="answers">
+            <button>The Jenkins workspace path</button>
+            <button>The GitHub password</button>
+            <button>The Docker image tag</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="Find the first error above the final result">
+          <h3>3. If the run ends with <code>Finished: FAILURE</code>, what should you do first?</h3>
+          <div class="answers">
+            <button>Delete the Jenkins job</button>
+            <button>Find the first error above the final result</button>
+            <button>Ignore the console output</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Your Takeaway</h2>
+      <p>A successful beginner console output proves four things: the job started, SCM checkout happened, the expected stages ran, and Jenkins finished successfully. When failure comes later, this same reading loop tells you where to look first.</p>
+      <p>The next lesson should replace the placeholder <code>Test</code> stage with a deliberately failing command so you can practice diagnosing a real red build safely.</p>
+      <p>Ask the agent follow-up questions if anything is unclear. Good questions: “What does checkout scm mean?” or “How do I tell which command failed?”</p>
+      <p><a href="../reference/0006-console-output-reading-loop.html">Open the quick reference sheet</a>.</p>
+    </section>
+
+    <footer>
+      Lesson based on official Jenkins Pipeline getting-started and running documentation.
+    </footer>
+  </main>
+
+  <script>
+    const explanations = {
+      stage: 'A stage boundary. This tells you Jenkins entered the named stage from the Jenkinsfile.',
+      sh: 'A shell step. The next lines usually show the command Jenkins asked the agent to run.',
+      pwd: 'The actual shell command. Lines starting with + often show commands executed by the shell.',
+      workspace: 'The directory Jenkins allocated for this job run. This is where checkout and shell commands run.',
+      result: 'The final run status. Useful, but the cause of a failure is usually earlier in the log.'
+    };
+
+    const line = document.querySelector('#line');
+    const explain = document.querySelector('#explain');
+    line.addEventListener('change', () => {
+      explain.textContent = explanations[line.value];
+    });
+
+    for (const question of document.querySelectorAll('.question')) {
+      const answer = question.dataset.answer;
+      const feedback = question.querySelector('.feedback');
+      for (const button of question.querySelectorAll('button')) {
+        button.addEventListener('click', () => {
+          for (const sibling of question.querySelectorAll('button')) sibling.classList.remove('correct', 'wrong');
+          if (button.textContent === answer) {
+            button.classList.add('correct');
+            feedback.textContent = 'Correct. You used the console output as evidence.';
+          } else {
+            button.classList.add('wrong');
+            feedback.textContent = 'Not quite. Read the line as a clue about trigger, checkout, stage, or result.';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

@@ -5,7 +5,7 @@ pipeline {
         stage('Inspect') {
             steps {
                 sh 'pwd'
-                sh 'ls'
+                sh 'exit 1'
             }
         }
 

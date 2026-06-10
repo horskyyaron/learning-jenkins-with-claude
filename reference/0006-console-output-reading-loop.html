@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Console Output Reading Loop Reference</title>
+  <style>
+    :root { --ink: #111827; --muted: #4b5563; --line: #cbd5e1; --accent: #2563eb; --paper: #f8fbff; --code: #0b1220; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: var(--paper); line-height: 1.5; }
+    main { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0; }
+    header { border-bottom: 4px solid var(--accent); padding-bottom: 18px; margin-bottom: 22px; }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 4rem); line-height: .95; letter-spacing: -.05em; }
+    h2 { margin: 26px 0 8px; font-size: 1.35rem; }
+    p { margin: 0 0 10px; color: var(--muted); }
+    pre { margin: 14px 0; padding: 18px; background: var(--code); color: #f8fafc; border-radius: 16px; overflow-x: auto; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fff; }
+    th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { background: #dbeafe; }
+    .rule { border: 1px solid var(--line); border-left: 6px solid var(--accent); padding: 14px; border-radius: 12px; background: #fff; }
+    @media print { main { width: 100%; padding: 0; } body { background: #fff; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Console Output Reading Loop</h1>
+      <p>Quick reference for reading a Jenkins Pipeline run without getting lost.</p>
+    </header>
+
+    <section class="rule">
+      <strong>Core rule:</strong> read console output in order: trigger, checkout, stage output, final result.
+    </section>
+
+    <h2>Four-Pass Scan</h2>
+    <table>
+      <thead>
+        <tr><th>Pass</th><th>Question</th><th>Look for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Trigger</td><td>Why did this run start?</td><td>User, webhook, branch indexing, timer, or upstream job.</td></tr>
+        <tr><td>Checkout</td><td>Did Jenkins fetch the right code?</td><td>Repository URL, branch, commit, workspace path.</td></tr>
+        <tr><td>Stages</td><td>Which Pipeline steps ran?</td><td><code>[Pipeline] stage</code>, <code>[Pipeline] sh</code>, command output.</td></tr>
+        <tr><td>Result</td><td>Did the run succeed?</td><td><code>Finished: SUCCESS</code>, <code>FAILURE</code>, or <code>UNSTABLE</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Healthy Beginner Output</h2>
+    <pre><code>[Pipeline] stage
+[Pipeline] { (Inspect)
+[Pipeline] sh
++ pwd
+/var/jenkins_home/workspace/learning-jenkins
+[Pipeline] sh
++ ls
+Jenkinsfile
+lessons
+reference
+[Pipeline] }
+[Pipeline] stage
+[Pipeline] { (Test)
+[Pipeline] sh
++ echo No tests configured yet
+No tests configured yet
+[Pipeline] }
+Finished: SUCCESS</code></pre>
+
+    <h2>First Failure Rule</h2>
+    <p>When a run fails, find the first command output or error before <code>Finished: FAILURE</code>. The final line tells you the result; the useful cause is usually earlier.</p>
+
+    <h2>Trusted Sources</h2>
+    <p><a href="https://www.jenkins.io/doc/book/pipeline/getting-started/">Getting started with Pipeline</a></p>
+    <p><a href="https://www.jenkins.io/doc/book/pipeline/running-pipelines/">Running Pipelines</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Red Build Diagnosis Reference</title>
+  <style>
+    :root { --ink: #171717; --muted: #525252; --line: #d4d4d4; --accent: #dc2626; --paper: #fff7f7; --code: #1c0b0b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: var(--paper); line-height: 1.5; }
+    main { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0; }
+    header { border-bottom: 4px solid var(--accent); padding-bottom: 18px; margin-bottom: 22px; }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 4rem); line-height: .95; letter-spacing: -.05em; }
+    h2 { margin: 26px 0 8px; font-size: 1.35rem; }
+    p { margin: 0 0 10px; color: var(--muted); }
+    pre { margin: 14px 0; padding: 18px; background: var(--code); color: #f8fafc; border-radius: 16px; overflow-x: auto; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fff; }
+    th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    th { background: #fee2e2; }
+    .rule { border: 1px solid var(--line); border-left: 6px solid var(--accent); padding: 14px; border-radius: 12px; background: #fff; }
+    @media print { main { width: 100%; padding: 0; } body { background: #fff; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Red Build Diagnosis</h1>
+      <p>Quick reference for a controlled Jenkins failure.</p>
+    </header>
+
+    <section class="rule">
+      <strong>Core rule:</strong> if an <code>sh</code> command exits nonzero, Jenkins normally fails that step and the Pipeline becomes red.
+    </section>
+
+    <h2>Controlled Failure</h2>
+    <pre><code>stage('Test') {
+    steps {
+        sh 'echo About to fail on purpose'
+        sh 'exit 1'
+    }
+}</code></pre>
+
+    <h2>Diagnosis Loop</h2>
+    <table>
+      <thead>
+        <tr><th>Question</th><th>Evidence</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Which stage failed?</td><td>Find the last open <code>[Pipeline] { (Stage Name)</code> before the error.</td></tr>
+        <tr><td>Which command failed?</td><td>Find the last <code>+</code> shell command before the error.</td></tr>
+        <tr><td>Why did Jenkins fail it?</td><td>Look for a nonzero exit status or command error.</td></tr>
+        <tr><td>How do I restore green?</td><td>Replace the failing command, commit, push, and build again.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Expected Clues</h2>
+    <pre><code>+ exit 1
+script returned exit code 1
+Finished: FAILURE</code></pre>
+
+    <h2>Trusted Sources</h2>
+    <p><a href="https://www.jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script">Pipeline sh step reference</a></p>
+    <p><a href="https://www.jenkins.io/doc/book/pipeline/jenkinsfile/#build">Using a Jenkinsfile: Build</a></p>
+  </main>
+</body>
+</html>
