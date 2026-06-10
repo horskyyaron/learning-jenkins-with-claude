@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add a Build Stage That Produces Output</title>
+  <style>
+    :root {
+      --ink: #101828;
+      --muted: #596579;
+      --paper: #f8f7ff;
+      --panel: #ffffff;
+      --line: #d9dff0;
+      --accent: #4f46e5;
+      --accent-dark: #3730a3;
+      --good: #147a4b;
+      --bad: #b42318;
+      --code: #121126;
+      --soft: #e0e7ff;
+      --warm: #fff7ed;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); line-height: 1.55; background: radial-gradient(circle at 18% 0%, #c7d2fe 0, transparent 34%), linear-gradient(145deg, #fff 0%, var(--paper) 100%); }
+    main { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 64px; }
+    header, section { background: rgba(255,255,255,.94); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 16px 46px rgba(16, 24, 40, .06); }
+    header { padding: 34px; }
+    section { margin-top: 18px; padding: 24px; }
+    .eyebrow { margin: 0 0 10px; color: var(--accent-dark); font-weight: 850; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 4.5rem); line-height: .95; letter-spacing: -.055em; }
+    h2 { margin: 0 0 12px; font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.03em; }
+    h3 { margin: 0 0 8px; }
+    p { margin: 0 0 14px; }
+    a { color: var(--accent-dark); font-weight: 750; }
+    .lede { max-width: 72ch; color: var(--muted); font-size: 1.1rem; margin-top: 16px; }
+    .win { border-left: 6px solid var(--accent); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .card { padding: 14px; border: 1px solid #e3e6f2; border-radius: 16px; background: #fff; }
+    .card strong { display: block; color: var(--accent-dark); margin-bottom: 4px; }
+    pre { margin: 14px 0 0; overflow-x: auto; padding: 20px; border-radius: 18px; background: var(--code); color: #f8fafc; border: 1px solid #2d2948; font-size: .95rem; line-height: 1.5; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .callout { background: var(--soft); border-color: #a5b4fc; }
+    .warm { background: var(--warm); border-color: #fed7aa; }
+    .quiz { display: grid; gap: 16px; }
+    .question { border: 1px solid #e3e6f2; border-radius: 18px; padding: 16px; background: #fff; }
+    .answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button { border: 1px solid #cbd5e1; background: #fff; color: var(--ink); border-radius: 999px; padding: 10px 14px; font-weight: 800; cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    button.correct { background: #ecfdf3; border-color: var(--good); color: var(--good); }
+    button.wrong { background: #fff1f0; border-color: var(--bad); color: var(--bad); }
+    .feedback { margin-top: 10px; min-height: 1.4em; color: var(--muted); font-weight: 650; }
+    label { display: block; font-weight: 850; margin-bottom: 6px; }
+    select { width: 100%; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; background: #fff; }
+    footer { margin-top: 18px; color: var(--muted); font-size: .95rem; }
+    @media (max-width: 860px) { main { width: min(100% - 22px, 980px); padding-top: 18px; } header, section { padding: 20px; border-radius: 20px; } .grid, .cards { grid-template-columns: 1fr; } }
+    @media print { body { background: #fff; } main { width: 100%; padding: 0; } header, section { box-shadow: none; break-inside: avoid; } button, select { display: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Lesson 0010 · Jenkins from zero</p>
+      <h1>Add a Build Stage That Produces Output</h1>
+      <p class="lede">Your smoke-test Pipeline is green. The next win is adding a real <code>Build</code> stage, even though this repository is a learning workspace rather than an app.</p>
+    </header>
+
+    <section class="win">
+      <h2>The One Thing</h2>
+      <p>A useful <code>Build</code> stage should create or assemble something. Jenkins’ Jenkinsfile docs describe the build stage as where source code is assembled, compiled, or packaged, and note that the Jenkinsfile is the glue that invokes the actual build tool. For this learning repo, the build output is a tiny generated file: <code>build/summary.txt</code>.</p>
+      <p>Sources: <a href="https://www.jenkins.io/doc/book/pipeline/jenkinsfile/#build" target="_blank" rel="noreferrer">Using a Jenkinsfile: Build</a> and <a href="https://www.jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script" target="_blank" rel="noreferrer">Pipeline <code>sh</code> step reference</a>.</p>
+    </section>
+
+    <section>
+      <h2>The New Shape</h2>
+      <div class="cards">
+        <div class="card"><strong>Inspect</strong>Show where Jenkins is and what files were checked out.</div>
+        <div class="card"><strong>Build</strong>Create a generated output in <code>build/summary.txt</code>.</div>
+        <div class="card"><strong>Test</strong>Verify repository shape and generated build output.</div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section>
+        <h2>Build Stage</h2>
+        <pre><code>stage('Build') {
+    steps {
+        sh 'mkdir -p build'
+        sh 'printf "Jenkins learning workspace\n" > build/summary.txt'
+        sh 'ls build'
+    }
+}</code></pre>
+      </section>
+
+      <section class="warm">
+        <h2>Test Addition</h2>
+        <p>The Test stage now checks the output from Build. This connects stages: Build creates something, Test verifies it exists.</p>
+        <pre><code>sh 'test -f build/summary.txt'</code></pre>
+      </section>
+    </div>
+
+    <section class="callout">
+      <h2>Expected Console Story</h2>
+      <pre><code>[Pipeline] { (Build)
+[Pipeline] sh
++ mkdir -p build
+[Pipeline] sh
++ printf Jenkins learning workspace\n
+[Pipeline] sh
++ ls build
+summary.txt
+[Pipeline] { (Test)
+[Pipeline] sh
++ test -f build/summary.txt
+Finished: SUCCESS</code></pre>
+      <p>The important evidence is <code>summary.txt</code> appearing in the Build stage and <code>test -f build/summary.txt</code> passing in the Test stage.</p>
+    </section>
+
+    <section>
+      <h2>Command Reader</h2>
+      <p>Pick a command and see its role in the pipeline.</p>
+      <label for="command">Build/test command</label>
+      <select id="command">
+        <option value="mkdir">mkdir -p build</option>
+        <option value="printf">printf ... &gt; build/summary.txt</option>
+        <option value="ls">ls build</option>
+        <option value="test">test -f build/summary.txt</option>
+      </select>
+      <pre><code id="explain">Creates the directory that will hold generated build output.</code></pre>
+    </section>
+
+    <section>
+      <h2>Practice</h2>
+      <div class="quiz">
+        <div class="question" data-answer="Create or assemble something">
+          <h3>1. What should a beginner Build stage do?</h3>
+          <div class="answers">
+            <button>Create or assemble something</button>
+            <button>Only print Build</button>
+            <button>Delete the workspace</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="It proves the Build stage created its output">
+          <h3>2. Why does Test check <code>build/summary.txt</code>?</h3>
+          <div class="answers">
+            <button>It proves the Build stage created its output</button>
+            <button>It installs GitHub</button>
+            <button>It unlocks Jenkins</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+        <div class="question" data-answer="Inspect -> Build -> Test">
+          <h3>3. What is the new stage order?</h3>
+          <div class="answers">
+            <button>Inspect -> Build -> Test</button>
+            <button>Test -> Deploy -> Inspect</button>
+            <button>Docker -> GitHub -> Password</button>
+          </div>
+          <div class="feedback"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Your Takeaway</h2>
+      <p>The pipeline now has a basic CI shape: inspect the workspace, build an output, then test expectations. This is still tiny, but it maps directly to real software projects where Build might run <code>npm run build</code>, <code>mvn package</code>, or <code>make</code>.</p>
+      <p>The next lesson should save the generated build output with <code>archiveArtifacts</code> so Jenkins keeps something from the run.</p>
+      <p>Ask the agent follow-up questions if anything is unclear. Good questions: “Where does build/summary.txt live?” or “What happens to generated files after the build?”</p>
+      <p><a href="../reference/0010-build-stage-produces-output.html">Open the quick reference sheet</a>.</p>
+    </section>
+
+    <footer>
+      Lesson based on official Jenkins Jenkinsfile and Pipeline shell-step documentation.
+    </footer>
+  </main>
+
+  <script>
+    const explanations = {
+      mkdir: 'Creates the directory that will hold generated build output.',
+      printf: 'Writes a tiny generated file so Build produces something concrete.',
+      ls: 'Prints the build directory so the console shows the generated output.',
+      test: 'Verifies the generated file exists; if it is missing, the Test stage fails.'
+    };
+
+    const command = document.querySelector('#command');
+    const explain = document.querySelector('#explain');
+    command.addEventListener('change', () => {
+      explain.textContent = explanations[command.value];
+    });
+
+    for (const question of document.querySelectorAll('.question')) {
+      const answer = question.dataset.answer;
+      const feedback = question.querySelector('.feedback');
+      for (const button of question.querySelectorAll('button')) {
+        button.addEventListener('click', () => {
+          for (const sibling of question.querySelectorAll('button')) sibling.classList.remove('correct', 'wrong');
+          if (button.textContent === answer) {
+            button.classList.add('correct');
+            feedback.textContent = 'Correct. You connected Build output to Test verification.';
+          } else {
+            button.classList.add('wrong');
+            feedback.textContent = 'Not quite. Build creates output; Test verifies the expectation.';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
